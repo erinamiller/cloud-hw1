@@ -1,83 +1,105 @@
-swagger: '2.0'
-info:
-  title: AI Customer Service API
-  description: 'AI Customer Service application, built during the Cloud and Big Data course at Columbia University.'
-  version: 1.0.0
-schemes:
-  - https
-basePath: /v1
-produces:
-  - application/json
-paths:
-  /chatbot:
-    post:
-      summary: The endpoint for the Natural Language Understanding API.
-      description: |
-        This API takes in one or more messages from the client and returns
-        one or more messages as a response. The API leverages the NLP
-        backend functionality, paired with state and profile information
-        and returns a context-aware reply.
-      tags:
-        - NLU
-      operationId: sendMessage
-      produces:
-        - application/json
-      parameters:
-        - name: body
-          in: body
-          required: true
-          schema:
-            $ref: '#/definitions/BotRequest'
-      responses:
-        '200':
-          description: A Chatbot response
-          schema:
-            $ref: '#/definitions/BotResponse'
-        '403':
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/Error'
-        '500':
-          description: Unexpected error
-          schema:
-            $ref: '#/definitions/Error'
-definitions:
-  BotRequest:
-    type: object
-    properties:
-      messages:
-        type: array
-        items:
-          $ref: '#/definitions/Message'
-  BotResponse:
-    type: object
-    properties:
-      messages:
-        type: array
-        items:
-          $ref: '#/definitions/Message'
-  Message:
-    type: object
-    properties:
-      type:
-        type: string
-      unstructured:
-        $ref: '#/definitions/UnstructuredMessage'
-  UnstructuredMessage:
-    type: object
-    properties:
-      id:
-        type: string
-      text:
-        type: string
-      timestamp:
-        type: string
-        format: datetime
-  Error:
-    type: object
-    properties:
-      code:
-        type: integer
-        format: int32
-      message:
-        type: string
+/*
+ * Copyright 2010-2016 Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License").
+ * You may not use this file except in compliance with the License.
+ * A copy of the License is located at
+ *
+ *  http://aws.amazon.com/apache2.0
+ *
+ * or in the "license" file accompanying this file. This file is distributed
+ * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
+var apigClientFactory = {};
+apigClientFactory.newClient = function (config) {
+    var apigClient = { };
+    if(config === undefined) {
+        config = {
+            accessKey: '',
+            secretKey: '',
+            sessionToken: '',
+            region: '',
+            apiKey: undefined,
+            defaultContentType: 'application/json',
+            defaultAcceptType: 'application/json'
+        };
+    }
+    if(config.accessKey === undefined) {
+        config.accessKey = '';
+    }
+    if(config.secretKey === undefined) {
+        config.secretKey = '';
+    }
+    if(config.apiKey === undefined) {
+        config.apiKey = '';
+    }
+    if(config.sessionToken === undefined) {
+        config.sessionToken = '';
+    }
+    if(config.region === undefined) {
+        config.region = 'us-east-1';
+    }
+    //If defaultContentType is not defined then default to application/json
+    if(config.defaultContentType === undefined) {
+        config.defaultContentType = 'application/json';
+    }
+    //If defaultAcceptType is not defined then default to application/json
+    if(config.defaultAcceptType === undefined) {
+        config.defaultAcceptType = 'application/json';
+    }
+
+    
+    // extract endpoint and path from url
+    var invokeUrl = 'https://ysx4xluooj.execute-api.us-east-1.amazonaws.com/firstStage';
+    var endpoint = /(^https?:\/\/[^\/]+)/g.exec(invokeUrl)[1];
+    var pathComponent = invokeUrl.substring(endpoint.length);
+
+    var sigV4ClientConfig = {
+        accessKey: config.accessKey,
+        secretKey: config.secretKey,
+        sessionToken: config.sessionToken,
+        serviceName: 'execute-api',
+        region: config.region,
+        endpoint: endpoint,
+        defaultContentType: config.defaultContentType,
+        defaultAcceptType: config.defaultAcceptType
+    };
+
+    var authType = 'NONE';
+    if (sigV4ClientConfig.accessKey !== undefined && sigV4ClientConfig.accessKey !== '' && sigV4ClientConfig.secretKey !== undefined && sigV4ClientConfig.secretKey !== '') {
+        authType = 'AWS_IAM';
+    }
+
+    var simpleHttpClientConfig = {
+        endpoint: endpoint,
+        defaultContentType: config.defaultContentType,
+        defaultAcceptType: config.defaultAcceptType
+    };
+
+    var apiGatewayClient = apiGateway.core.apiGatewayClientFactory.newClient(simpleHttpClientConfig, sigV4ClientConfig);
+    
+    
+    
+    apigClient.chatbotPost = function (params, body, additionalParams) {
+        if(additionalParams === undefined) { additionalParams = {}; }
+        
+        apiGateway.core.utils.assertParametersDefined(params, ['body'], ['body']);
+        
+        var chatbotPostRequest = {
+            verb: 'post'.toUpperCase(),
+            path: pathComponent + uritemplate('/chatbot').expand(apiGateway.core.utils.parseParametersToObject(params, [])),
+            headers: apiGateway.core.utils.parseParametersToObject(params, []),
+            queryParams: apiGateway.core.utils.parseParametersToObject(params, []),
+            body: body
+        };
+        
+        
+        return apiGatewayClient.makeRequest(chatbotPostRequest, authType, additionalParams, config.apiKey);
+    };
+    
+
+    return apigClient;
+};
