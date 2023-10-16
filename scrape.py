@@ -2,7 +2,6 @@ from datetime import datetime
 import requests
 import boto3
 
-key = '0GDGIbY1c_IZZC_TY0DTcUp01OZcdvYJrH22haUHfyJ8ZgA0892MaoN0r9n_vwn-_80duthilMpyJJ6ZE8_H5VF5RGF1eOlZ9uFMWsC1oSpY-yPU6k_NxNuyj_UqZXYx'
 dynamodb = boto3.client('dynamodb', region_name='us-east-1')
 
 def query_yelp(term, location, limit=50):
