@@ -37,6 +37,42 @@ $(document).ready(function() {
     }, {});
   }
 
+  function generateSessionId() {
+    var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var length = 32;
+    var result = '';
+    for (var i = length; i > 0; --i) {
+      result += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return result;
+  }
+
+  var sessionId = generateSessionId();
+
+  function callChatbotApi(message) {
+    // params, body, additionalParams
+    return sdk.chatbotPost({}, {
+      messages: [{
+        type: 'unstructured',
+        unstructured: {
+          text: message
+        }
+      }],
+      sessionId: generateSessionId() // add sessionId attribute here
+    }, {});
+  }  
+  function generateSessionId() {
+    var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    var length = 32;
+    var result = '';
+    for (var i = length; i > 0; --i) {
+      result += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return result;
+  }
+
+  var sessionId = generateSessionId();
+
   function insertMessage() {
     msg = $('.message-input').val();
     if ($.trim(msg) == '') {
